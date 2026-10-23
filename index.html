@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>抽象表现主义 Pro - Abstract Expressionism Studio</title>
+    <style>
+        :root { --line-color: #000; --bg-ui: #f0f0f0; }
+        body { 
+            background: var(--bg-ui); color: #000; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; padding: 0; display: flex; width: 100vw; height: 100vh; overflow: hidden; 
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .sidebar {
+            width: 360px; height: 100vh; 
+            background: #92eea5; 
+            color: #000; 
+            display: flex; flex-direction: column; padding: 0; box-sizing: border-box;
+            z-index: 10; flex-shrink: 0;
+        }
+
+        .sidebar-content {
+            flex: 1; overflow-y: auto; overflow-x: hidden; display: flex; flex-direction: column; gap: 20px;
+            padding: 30px 25px; scrollbar-width: none;
+        }
+        .sidebar-content::-webkit-scrollbar { display: none; }
+
+        .panel { display: flex; flex-direction: column; gap: 20px; } 
+
+        /* 恢复预览框的原始布局和背景 */
+        .preview-box {
+            width: 100%;
+            height: 180px;
+            background: #000000; 
+            border: none; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        .preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* 保证图形始终满铺预览框 */
+            display: none;
+            transition: filter 0.1s ease;
+        }
+        .preview-box span {
+            font-size: 11px;
+            color: #92eea5; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .ctrl { display: flex; flex-direction: column; gap: 8px; } 
+
+        .ctrl label { 
+            font-size: 11px; color: #000; 
+            display: flex; justify-content: space-between;
+            align-items: center; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .ratio-wrapper { display: flex; gap: 10px; align-items: center; }
+        .ratio-text { 
+            cursor: pointer; font-size: 10px; opacity: 0.3; transition: opacity 0.2s; color: #000; font-weight: bold;
+        }
+        .ratio-text.active { opacity: 1; } 
+
+        .file-input-wrapper {
+            position: relative; display: flex; align-items: center; 
+            background: #000; border: 1px solid #000;
+            justify-content: center; box-sizing: border-box;
+        }
+        .file-input-container {
+            padding: 12px; font-size: 11px; flex: 1; cursor: pointer; 
+            color: #fff; text-align: center; text-transform: uppercase;
+        }
+        .clear-btn {
+            position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+            color: #fff; cursor: pointer; font-size: 14px; font-weight: bold;
+            padding: 5px; line-height: 1; display: none; transition: opacity 0.2s;
+        }
+        .clear-btn:hover { opacity: 0.6; }
+        
+        .btn-white {
+            background: #000; color: #fff; border: none; padding: 12px; 
+            font-size: 10px; cursor: pointer; text-transform: uppercase;
+            transition: opacity 0.2s; box-sizing: border-box;
+        }
+        .btn-white:hover { opacity: 0.8; }
+
+        .btn-random {
+            background: #e0e0e0; border: 1px solid #ccc; padding: 12px; 
+            font-size: 10px; cursor: pointer; text-transform: uppercase;
+            grid-column: 1 / 3; margin-top: 5px; box-sizing: border-box;
+            color: #000; 
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none; width: 100%; height: 2px; background: #ffffff; margin: 4px 0 16px 0; outline: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 10px; height: 10px; border-radius: 50%; background: #000; cursor: pointer; 
+        }
+
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            border: none; 
+            height: 32px;
+            margin: 4px 0 16px 0;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        
+        .color-picker-container input[type="color"] {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 50%;
+            height: 100%;
+            border: none; 
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            outline: none;
+        }
+        
+        .color-picker-container input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        
+        .color-picker-container input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 0;
+        }
+        
+        .color-picker-container input[type="color"]::-moz-color-swatch {
+            border: none;
+            border-radius: 0;
+        }
+        
+        .color-picker-container input[type="text"] {
+            width: 50%;
+            text-align: center;
+            font-size: 11px;
+            color: #000; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .color-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 5px; }
+
+        .footer-text { 
+            padding: 25px 0; text-align: center; 
+            font-size: 9px; color: #000000; 
+            letter-spacing: 1px;
+        }
+
+        .canvas-area { 
+            flex: 1; background: #ffffff; display: flex; 
+            align-items: center; justify-content: center; position: relative; overflow: hidden; 
+        }
+        
+        canvas { 
+            background: transparent; 
+            transition: background-color 0s;
+        }
+        #upload { display: none; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <div class="sidebar-content">
+        <div class="panel">
+            
+            <div class="preview-box" id="previewBox">
+                <span id="previewLabel">图像预览 PREVIEW</span>
+                <img id="previewImg" src="" alt="Preview">
+            </div>
+
+            <div class="ctrl">
+                <label>
+                    图像源 (IMAGE SOURCE)
+                    <div class="ratio-wrapper">
+                        <span class="ratio-text" data-ratio="3/4">3:4</span>
+                        <span class="ratio-text active" data-ratio="full">满屏</span>
+                    </div>
+                </label>
+                <div class="file-input-wrapper">
+                    <div class="file-input-container" onclick="document.getElementById('upload').click()" id="fileNameDisplay">上传图片 UPLOAD</div>
+                    <div class="clear-btn" id="clearImageBtn" onclick="clearImage(event)">✕</div>
+                </div>
+                <input type="file" id="upload" accept="image/*">
+            </div>
+
+            <div class="ctrl">
+                <label>画布背景色 BG COLOR</label>
+                <div class="color-picker-container">
+                    <input type="color" id="bgColor" value="#f0fff1">
+                    <input type="text" id="v-bgColor" value="#F0FFF1" maxlength="7">
+                </div>
+
+                <label>图形缩放 SCALE <span id="v-scale">100</span></label>
+                <input type="range" id="scale" min="10" max="300" step="1" value="100">
+
+                <label>图形背景阈值 THRESHOLD <span id="v-threshold">30</span></label>
+                <input type="range" id="threshold" min="0" max="255" step="1" value="30">
+
+                <label>图形弥散 DIFFUSION <span id="v-blur">25</span></label>
+                <input type="range" id="blur" min="5" max="60" step="1" value="25">
+                
+                <label>色彩饱和度 VIBRANCE <span id="v-saturate">250</span></label>
+                <input type="range" id="saturate" min="100" max="400" step="1" value="250">
+
+                <label>颗粒质感 GRAIN <span id="v-noise">20</span></label>
+                <input type="range" id="noise" min="0" max="50" step="1" value="20">
+            </div>
+
+            <div class="ctrl">
+                <label>导出 (EXPORT)</label>
+                <div class="color-row" style="grid-template-columns: 1fr 1fr;">
+                    <button class="btn-white" onclick="downloadImage('jpeg', this)">JPG</button>
+                    <button class="btn-white" onclick="downloadImage('png', this)">PNG</button>
+                    <button class="btn-random" onclick="randomBgColor()">随机背景色彩</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="footer-text">2026 &copy;Design by Type Play Studio</div>
+</div>
+<div class="canvas-area" id="canvasArea">
+    <canvas id="mainCanvas"></canvas>
+</div>
+<script>
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d', {willReadFrequently: true});
+    const offCanvas = document.createElement('canvas');
+    const offCtx = offCanvas.getContext('2d', {willReadFrequently: true});
+    
+    // 全局离屏渲染缓存池，用于大幅降低重复拖拽滑块时的 CPU 卡顿开销
+    const cachedExtractCanvas = document.createElement('canvas');
+    let lastRenderConfig = {};
+    
+    // 全局噪音纹理模式池，由硬件GPU渲染，避免极其卡顿的 Math.random 遍历
+    const noisePatternCanvas = document.createElement('canvas');
+    let noiseIntensityCached = -1;
+
+    let imgSource = null;
+    let renderRequested = false; // 用于优化动画调度的锁
+    let ratioMode = 'full'; 
+    let currentRatio = 1; 
+
+    // 初始化并监听滑块动态填充效果及同步预览更新
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+        const updateRangeBg = () => {
+            const min = parseFloat(input.min) || 0;
+            const max = parseFloat(input.max) || 100;
+            const val = parseFloat(input.value) || 0;
+            const percentage = ((val - min) / (max - min)) * 100;
+            input.style.background = `linear-gradient(to right, #000000 ${percentage}%, #ffffff ${percentage}%)`;
+        };
+
+        updateRangeBg(); 
+
+        input.addEventListener('input', () => {
+            const display = document.getElementById('v-' + input.id);
+            if(display) display.innerText = input.value;
+            updateRangeBg(); 
+            syncPreviewBox(); // 实时同步预览框颜色效果
+            requestRender();  // 请求平滑渲染
+        });
+    });
+
+    // 拾色器：直接应用到底层画布样式避免引发重绘，0延迟顺滑；且恢复只应用在 canvas 本体，不影响外围白边
+    document.getElementById('bgColor').addEventListener('input', (e) => {
+        const color = e.target.value;
+        document.getElementById('v-bgColor').value = color.toUpperCase();
+        document.getElementById('mainCanvas').style.backgroundColor = color;
+    });
+
+    // 文本框颜色输入支持（可以自己输入/粘贴修改色彩）
+    document.getElementById('v-bgColor').addEventListener('input', (e) => {
+        let val = e.target.value.trim();
+        // 自动补齐 # 号
+        if (val.length > 0 && val[0] !== '#') {
+            val = '#' + val;
+        }
+        
+        // 校验是否为正确的HEX色值 (支持 3 位或 6 位)
+        if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(val)) {
+            let fullHex = val;
+            // 如果是3位缩写，转为6位以供 input[type=color] 使用
+            if (val.length === 4) {
+                fullHex = '#' + val[1]+val[1] + val[2]+val[2] + val[3]+val[3];
+            }
+            document.getElementById('bgColor').value = fullHex;
+            document.getElementById('mainCanvas').style.backgroundColor = fullHex;
+        }
+    });
+
+    // 失焦时修正格式，避免由于乱填导致的无效数据显示
+    document.getElementById('v-bgColor').addEventListener('blur', (e) => {
+        e.target.value = document.getElementById('bgColor').value.toUpperCase();
+    });
+
+    // 初始化界面背景色同步
+    const initBgColor = document.getElementById('bgColor').value;
+    document.getElementById('mainCanvas').style.backgroundColor = initBgColor;
+
+    // 让预览框的效果保持原图像效果即可，不模糊
+    function syncPreviewBox() {
+        const previewImg = document.getElementById('previewImg');
+        previewImg.style.filter = 'none';
+    }
+
+    document.querySelectorAll('.ratio-text').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.ratio-text').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            ratioMode = btn.dataset.ratio;
+            resizeCanvas();
+            requestRender();
+        };
+    });
+
+    document.getElementById('upload').onchange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            const img = new Image();
+            img.decoding = 'sync'; 
+            
+            const objUrl = URL.createObjectURL(file);
+
+            img.onload = () => {
+                imgSource = img;
+                
+                let fileName = file.name;
+                const dotIdx = fileName.lastIndexOf('.');
+                if (dotIdx > 0) fileName = fileName.substring(0, dotIdx);
+                if (fileName.length > 8) fileName = fileName.substring(0, 8) + '...';
+                
+                document.getElementById('fileNameDisplay').innerText = fileName;
+                document.getElementById('clearImageBtn').style.display = 'block';
+
+                document.getElementById('previewImg').src = objUrl;
+                document.getElementById('previewImg').style.display = 'block';
+                document.getElementById('previewLabel').style.display = 'none';
+
+                resizeCanvas();
+                syncPreviewBox();
+                requestRender();
+            };
+            img.src = objUrl;
+        }
+        e.target.value = '';
+    };
+
+    function clearImage(e) {
+        if (e) e.stopPropagation(); 
+        imgSource = null;
+        lastRenderConfig = {}; 
+        document.getElementById('upload').value = '';
+        document.getElementById('fileNameDisplay').innerText = '上传图片 UPLOAD';
+        document.getElementById('clearImageBtn').style.display = 'none';
+
+        const previewImg = document.getElementById('previewImg');
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+        document.getElementById('previewLabel').style.display = 'block';
+
+        syncPreviewBox();
+        requestRender(); 
+    }
+
+    function randomBgColor() {
+        const randomHex = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+        document.getElementById('bgColor').value = randomHex;
+        document.getElementById('v-bgColor').value = randomHex.toUpperCase();
+        document.getElementById('mainCanvas').style.backgroundColor = randomHex;
+    }
+
+    function resizeCanvas() {
+        const area = document.getElementById('canvasArea');
+        const padding = ratioMode === 'full' ? 0 : 60;
+        const maxW = area.clientWidth - padding;
+        const maxH = area.clientHeight - padding;
+        
+        if (ratioMode === 'full') currentRatio = maxW / maxH;
+        else {
+            const parts = ratioMode.split('/');
+            currentRatio = parseFloat(parts[0]) / parseFloat(parts[1]);
+        }
+
+        let w = maxW; let h = w / currentRatio;
+        if (h > maxH) { h = maxH; w = h * currentRatio; }
+
+        canvas.style.width = Math.floor(w) + 'px';
+        canvas.style.height = Math.floor(h) + 'px';
+    }
+
+    window.addEventListener('resize', () => { resizeCanvas(); requestRender(); });
+    resizeCanvas();
+
+    function extractSubject(canvas, threshold) {
+        if (threshold <= 0) return;
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        if (w === 0 || h === 0) return;
+        
+        const imageData = ctx.getImageData(0, 0, w, h);
+        const data = imageData.data;
+        
+        const corners = [0, (w - 1) * 4, (h - 1) * w * 4, ((h - 1) * w + w - 1) * 4];
+        let sumR = 0, sumG = 0, sumB = 0;
+        for (let i = 0; i < corners.length; i++) {
+            const idx = corners[i];
+            sumR += data[idx]; sumG += data[idx+1]; sumB += data[idx+2];
+        }
+        const bgR = sumR / 4; const bgG = sumG / 4; const bgB = sumB / 4;
+        const scaledThresholdSq = ((threshold / 255) * 442) ** 2;
+        
+        for (let i = 0; i < data.length; i += 4) {
+            const diffSq = (data[i] - bgR)**2 + (data[i+1] - bgG)**2 + (data[i+2] - bgB)**2;
+            if (diffSq <= scaledThresholdSq) data[i+3] = 0; 
+        }
+        ctx.putImageData(imageData, 0, 0);
+    }
+
+    // 全新 GPU 加速级颗粒渲染方案 (替换掉所有像素遍历从而确保滑动流畅)
+    function addNoise(context, w, h, intensity) {
+        if (intensity <= 0) return;
+        
+        if (noiseIntensityCached !== intensity || noisePatternCanvas.width === 0) {
+            noisePatternCanvas.width = 256;
+            noisePatternCanvas.height = 256;
+            const nCtx = noisePatternCanvas.getContext('2d', {willReadFrequently: true});
+            const imgData = nCtx.createImageData(256, 256);
+            const data = imgData.data;
+            const amplitude = intensity * 255 * 1.5; 
+            for (let i = 0; i < data.length; i += 4) {
+                const val = 128 + (Math.random() - 0.5) * amplitude;
+                data[i] = data[i+1] = data[i+2] = val;
+                data[i+3] = 255;
+            }
+            nCtx.putImageData(imgData, 0, 0);
+            noiseIntensityCached = intensity;
+        }
+
+        offCanvas.width = w; offCanvas.height = h;
+        offCtx.clearRect(0, 0, w, h);
+        offCtx.drawImage(context.canvas, 0, 0);
+        
+        // 利用 source-in 只将噪点应用在有图形的主体位置
+        offCtx.globalCompositeOperation = 'source-in';
+        offCtx.fillStyle = offCtx.createPattern(noisePatternCanvas, 'repeat');
+        offCtx.fillRect(0, 0, w, h);
+        offCtx.globalCompositeOperation = 'source-over'; 
+
+        // 利用叠加模式赋予高品质的图形杂色感
+        context.globalCompositeOperation = 'overlay';
+        context.drawImage(offCanvas, 0, 0);
+        context.globalCompositeOperation = 'source-over';
+    }
+
+    // 利用帧防抖解绑 UI 线程
+    function requestRender() {
+        if (!renderRequested) {
+            renderRequested = true;
+            requestAnimationFrame(() => {
+                renderEffect();
+                renderRequested = false;
+            });
+        }
+    }
+
+    function renderEffect() {
+        const h = 1200;
+        const w = Math.floor(1200 * currentRatio);
+        
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w;
+            canvas.height = h;
+        }
+
+        ctx.clearRect(0, 0, w, h);
+
+        if (!imgSource) return;
+
+        const sRatio = imgSource.width / imgSource.height;
+        const cRatio = w / h;
+        let dw, dh, dx, dy;
+        
+        if (sRatio > cRatio) { dw = w; dh = Math.round(w / sRatio); } 
+        else { dh = h; dw = Math.round(h * sRatio); }
+
+        const scaleFactor = document.getElementById('scale').value / 100;
+        dw = Math.round(dw * scaleFactor);
+        dh = Math.round(dh * scaleFactor);
+        dx = (w - dw) / 2;
+        dy = (h - dh) / 2;
+
+        const thresholdVal = parseInt(document.getElementById('threshold').value);
+        const blurVal = document.getElementById('blur').value;
+        const saturateVal = document.getElementById('saturate').value;
+
+        // 智能复用抠图层
+        if (lastRenderConfig.img !== imgSource || 
+            lastRenderConfig.scale !== scaleFactor || 
+            lastRenderConfig.threshold !== thresholdVal ||
+            lastRenderConfig.dw !== dw ||
+            lastRenderConfig.dh !== dh) {
+            
+            cachedExtractCanvas.width = dw;
+            cachedExtractCanvas.height = dh;
+            const extractCtx = cachedExtractCanvas.getContext('2d', {willReadFrequently: true});
+            extractCtx.drawImage(imgSource, 0, 0, dw, dh);
+            
+            extractSubject(cachedExtractCanvas, thresholdVal);
+            
+            lastRenderConfig.img = imgSource;
+            lastRenderConfig.scale = scaleFactor;
+            lastRenderConfig.threshold = thresholdVal;
+            lastRenderConfig.dw = dw;
+            lastRenderConfig.dh = dh;
+        }
+
+        // 移除对比度，保留饱和度和弥散
+        ctx.filter = `saturate(${saturateVal}%) blur(${blurVal}px)`;
+        ctx.drawImage(cachedExtractCanvas, dx, dy, dw, dh);
+
+        offCanvas.width = w; offCanvas.height = h;
+        offCtx.clearRect(0, 0, w, h);
+        offCtx.drawImage(canvas, 0, 0);
+
+        ctx.filter = 'none';
+        ctx.globalCompositeOperation = 'overlay';
+        ctx.drawImage(offCanvas, 0, 0);
+        ctx.globalCompositeOperation = 'source-over';
+
+        addNoise(ctx, w, h, document.getElementById('noise').value / 100);
+
+        offCtx.clearRect(0, 0, w, h);
+        offCtx.drawImage(canvas, 0, 0);
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.filter = 'contrast(110%) brightness(105%)';
+        ctx.drawImage(offCanvas, 0, 0);
+        ctx.filter = 'none';
+    }
+
+    // 初次主动请求渲染
+    requestRender();
+
+    // A3 高清引擎导出
+    function downloadImage(format, btn) {
+        setTimeout(() => {
+            let expW, expH;
+            if (currentRatio > 1) { 
+                expW = 4960; expH = Math.floor(4960 / currentRatio);
+            } else { 
+                expH = 4960; expW = Math.floor(4960 * currentRatio);
+            }
+
+            const expCanvas = document.createElement('canvas');
+            expCanvas.width = expW; expCanvas.height = expH;
+            const expCtx = expCanvas.getContext('2d', {willReadFrequently: true});
+
+            if (!imgSource) {
+                if (format === 'jpeg') {
+                    expCtx.fillStyle = document.getElementById('bgColor').value;
+                    expCtx.fillRect(0, 0, expW, expH);
+                } else { expCtx.clearRect(0, 0, expW, expH); }
+            } else {
+                const scale = expH / 1200; 
+
+                const sRatio = imgSource.width / imgSource.height;
+                const cRatio = expW / expH;
+                let dw, dh, dx, dy;
+                
+                if (sRatio > cRatio) { dw = expW; dh = Math.round(expW / sRatio); } 
+                else { dh = expH; dw = Math.round(expH * sRatio); }
+                
+                const scaleFactor = document.getElementById('scale').value / 100;
+                dw = Math.round(dw * scaleFactor); dh = Math.round(dh * scaleFactor);
+                dx = (expW - dw) / 2; dy = (expH - dh) / 2;
+
+                const thresholdVal = parseInt(document.getElementById('threshold').value);
+                const blurVal = Math.round(document.getElementById('blur').value * scale);
+                const saturateVal = document.getElementById('saturate').value;
+
+                const extractCanvas = document.createElement('canvas');
+                extractCanvas.width = dw; extractCanvas.height = dh;
+                const extractCtx = extractCanvas.getContext('2d', {willReadFrequently: true});
+                extractCtx.drawImage(imgSource, 0, 0, dw, dh);
+                extractSubject(extractCanvas, thresholdVal);
+
+                expCtx.clearRect(0, 0, expW, expH);
+
+                // 移除对比度，保留饱和度和弥散
+                expCtx.filter = `saturate(${saturateVal}%) blur(${blurVal}px)`;
+                expCtx.drawImage(extractCanvas, dx, dy, dw, dh);
+
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = expW; tempCanvas.height = expH;
+                const tempCtx = tempCanvas.getContext('2d', {willReadFrequently: true});
+                
+                tempCtx.drawImage(expCanvas, 0, 0);
+
+                expCtx.filter = 'none';
+                expCtx.globalCompositeOperation = 'overlay';
+                expCtx.drawImage(tempCanvas, 0, 0);
+                expCtx.globalCompositeOperation = 'source-over';
+
+                addNoise(expCtx, expW, expH, document.getElementById('noise').value / 100);
+
+                tempCtx.clearRect(0, 0, expW, expH);
+                tempCtx.drawImage(expCanvas, 0, 0);
+
+                expCtx.clearRect(0, 0, expW, expH);
+                expCtx.filter = 'contrast(110%) brightness(105%)';
+                expCtx.drawImage(tempCanvas, 0, 0);
+                expCtx.filter = 'none';
+
+                // 仅当格式为 jpeg 时才向背景图层填充颜色，PNG保留完全透明底
+                if (format === 'jpeg') {
+                    expCtx.globalCompositeOperation = 'destination-over';
+                    expCtx.fillStyle = document.getElementById('bgColor').value;
+                    expCtx.fillRect(0, 0, expW, expH);
+                    expCtx.globalCompositeOperation = 'source-over';
+                }
+            }
+
+            expCanvas.toBlob(blob => {
+                if (blob) {
+                    const link = document.createElement('a');
+                    link.download = `Abstract_Art_A3HD_${Date.now()}.${format === 'jpeg' ? 'jpg' : 'png'}`;
+                    link.href = URL.createObjectURL(blob);
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    setTimeout(() => URL.revokeObjectURL(link.href), 1000); 
+                }
+            }, `image/${format}`, 1.0);
+
+        }, 50);
+    }
+</script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
